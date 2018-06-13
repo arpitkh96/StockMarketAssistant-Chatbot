@@ -1,0 +1,15 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+
+[packages]
+
+watson_developer_cloud = "*"
+slackclient = "*"
+
+
+[requires]
+
+python_version = "3.6"
