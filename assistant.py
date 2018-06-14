@@ -8,17 +8,21 @@ assistant = AssistantV1(
     password=config.assis_pass,
     version='2017-04-21')
 wid=config.wid
+getUser=None
 contexts={}
-def message(text,channel):
+def message(text,channel,user):
     global contexts,assistant,wid
-    context={'both':0}
+    context={'both':0,'timezone':"Asia/Calcutta",'name':''}
     if channel in contexts:
         context=contexts[channel]
+    else:
+        context['name']=getUser(user)
+    print(context)
     response=assistant.message(wid,{ 'text':text},context=context)
     contexts[channel]=response['context']
     print(response,'\n')
     if response['intents'][0]['intent']=='onlyorg':
-        possible_exchanges,companies=NLU.getCompany(text)
+        possible_exchanges,companies,otherExchange=NLU.getCompany(text)
         if len(companies)>0:
             print('first if\n')
             context=response['context']
@@ -36,13 +40,14 @@ def message(text,channel):
             context=response['context']
             context['org']=""
             context['com']=2
+            context['otherExchange']=1 if otherExchange else 0
             print(context,'\n')
             response=assistant.message(wid,{ 'text':"sissa#edoc"},context=context)
             contexts[channel]=response['context']
             print(response,'\n')
             return response['output']['text']
     elif response['intents'][0]['intent']=='organdexchange':
-        possible_exchanges,companies=NLU.getCompany(text)
+        possible_exchanges,companies,otherExchange=NLU.getCompany(text)
         if len(companies)>0:
             print('first if\n')
             context=response['context']
@@ -65,6 +70,7 @@ def message(text,channel):
             context=response['context']
             context['org']=""
             context['com']=2
+            context['otherExchange']=1 if otherExchange else 0
             print(context,'\n')
             response=assistant.message(wid,{ 'text':"sissa#edoc"},context=context)
             contexts[channel]=response['context']
@@ -75,3 +81,7 @@ def message(text,channel):
         return "Wait"
         
     return response['output']['text']
+
+def registerUserMethod(method):
+    global getUser
+    getUser=method

@@ -27,10 +27,11 @@ def parse_bot_commands(slack_events):
         If its not found, then this function returns None, None.
     """
     for event in slack_events:
+        print(event)
         if event["type"] == "message" and not "subtype" in event:
             message =event["text"]
-            return message, event["channel"]
-    return None, None
+            return message, event["channel"],event['user']
+    return None, None,None
 
 def parse_direct_mention(message_text):
     """
@@ -41,13 +42,13 @@ def parse_direct_mention(message_text):
     # the first group contains the username, the second group contains the remaining message
     return (matches.group(1), matches.group(2).strip()) if matches else (None, None)
 
-def handle_command(command, channel):
+def handle_command(command, channel,user):
     """
         Executes bot command if the command is known
     """
     # Default response is help text for the user
     global assistant
-    response=assistant.message(command,channel)
+    response=assistant.message(command,channel,user)
     # Sends the response back to the channel
     if isinstance(response, list):
         for r in response:
@@ -57,19 +58,22 @@ def handle_command(command, channel):
         text=r 
     )
 
-
+def getUser(uid):
+    t=slack_client.api_call("users.info",user=uid)
+    return  t['user']['profile']['display_name']
 # In[2]:
 
 
 if __name__ == "__main__":
+    assistant.registerUserMethod(getUser)
     if slack_client.rtm_connect(with_team_state=False):
         print("Starter Bot connected and running!")
         # Read bot's user ID by calling Web API method `auth.test`
         starterbot_id = slack_client.api_call("auth.test")["user_id"]
         while True:
-            command, channel = parse_bot_commands(slack_client.rtm_read())
+            command, channel,user = parse_bot_commands(slack_client.rtm_read())
             if command:
-                handle_command(command, channel)
+                handle_command(command, channel,user)
             time.sleep(RTM_READ_DELAY)
     else:
         print("Connection failed. Exception traceback printed above.")

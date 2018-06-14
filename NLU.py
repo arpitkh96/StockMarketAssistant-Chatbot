@@ -21,11 +21,11 @@ def getCompany(text):
                         name= entity['disambiguation']['name']
                     else :
                         name= entity['text']
-                    possible_exchanges,results= queryExchange(name)
-                    return possible_exchanges,results
+                    possible_exchanges,results,otherExchange= queryExchange(name)
+                    return possible_exchanges,results,otherExchange
     except Exception as e:
         print("error "+e)
-    return [],[]        
+    return [],[],False        
 
 def queryExchange(company):
     PARAMS = {'lang':'en','query':company}
@@ -34,6 +34,8 @@ def queryExchange(company):
     r = requests.get(url = 'http://d.yimg.com/autoc.finance.yahoo.com/autoc', params = PARAMS).json()
     possible_exchanges=[]
     results=[]
+    otherExchange=True
+    print(r['ResultSet']['Result'])
     for i in r['ResultSet']['Result']:
         if i['exch'] in ['NSI','BSE']:
             if len(results)==0:
@@ -42,4 +44,6 @@ def queryExchange(company):
             elif results[0]['name']==i['name']:
                 possible_exchanges.append(i['exch'])
                 results.append(i)
-    return possible_exchanges,results
+        # else:
+        #     otherExchange=True
+    return possible_exchanges,results,otherExchange
