@@ -1,6 +1,8 @@
 # StockMarketAssistant-Chatbot
 
-This is just a conversation handler. It provides actions from watson assistant which can be used to hit a stockmarket api.
+This is just a conversation handler and does not actually hits to stockmarket api for now.
+It provides actions from watson assistant which can be used to hit a stockmarket api.
+Only indian exchanges like NSE BSE are allowed for now, You can allow others in NLU.py
 
 Steps for setup
 
